@@ -1,0 +1,25 @@
+function main(rate: decimal, allowed: i128, minAmount: i128, deadline: i32, lpReceiverAddress: address, assetIn: asset, malleable outAddress: address, malleable outScriptHash: address) {
+    if (XPU.block_timestamp > deadline) {
+        revert("deadline passed");
+    }
+
+    let outputs = XPU.outputs();
+    let transferredSum: i128 = 0;
+
+    for (let i; i < XPU.outputsLen(); i++) {
+        if (outputs[i].colourHash == assetIn && outputs[i].colouredAddress == lpReceiverAddress) {
+            transferredSum += outputs[i].amount;
+        }
+    }
+
+    if (transferredSum < minAmount) {
+        revert("not enough amount");
+    }
+
+    if (transferredSum > allowed) {
+        revert("transferred sum is greater than allowed");
+    }
+    
+    XPU.pushOut((transferredSum as decimal * rate) as i128, outAddress, outScriptHash);
+    return XPU.pushOut(this);
+}
