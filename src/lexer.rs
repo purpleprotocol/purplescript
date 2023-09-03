@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-pub fn tokenize(input: &str) -> Tokens {
+pub fn tokenise(input: &str) -> Tokens {
     Tokens::new(input)
 }
 
@@ -515,23 +515,23 @@ enum LexerState {
 
 #[cfg(test)]
 mod tests {
-    use super::{tokenize, Keyword, Position, Symbol, Token, TokenKind};
+    use super::{tokenise, Keyword, Position, Symbol, Token, TokenKind};
 
     #[test]
-    fn test_tokenize_empty_string() {
-        let tokens: Vec<Token> = tokenize("").collect();
+    fn test_tokenise_empty_string() {
+        let tokens: Vec<Token> = tokenise("").collect();
         assert_eq!(tokens, vec![]);
     }
 
     #[test]
-    fn test_tokenize_whitespace() {
-        let tokens: Vec<Token> = tokenize(" ").collect();
+    fn test_tokenise_whitespace() {
+        let tokens: Vec<Token> = tokenise(" ").collect();
         assert_eq!(tokens, vec![]);
     }
 
     #[test]
-    fn test_tokenize_integer_and_plus_and_minus() {
-        let tokens: Vec<Token> = tokenize("1 + 2 - 3").collect();
+    fn test_tokenise_integer_and_plus_and_minus() {
+        let tokens: Vec<Token> = tokenise("1 + 2 - 3").collect();
         assert_eq!(
             tokens,
             vec![
@@ -545,8 +545,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_string() {
-        let tokens: Vec<Token> = tokenize("\"dummy\"").collect();
+    fn test_tokenise_string() {
+        let tokens: Vec<Token> = tokenise("\"dummy\"").collect();
         assert_eq!(
             tokens,
             vec![Token::new(
@@ -557,8 +557,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_string_2() {
-        let tokens: Vec<Token> = tokenize("'dummy'").collect();
+    fn test_tokenise_string_2() {
+        let tokens: Vec<Token> = tokenise("'dummy'").collect();
         assert_eq!(
             tokens,
             vec![Token::new(
@@ -569,8 +569,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_assign() {
-        let tokens: Vec<Token> = tokenize("a = 1").collect();
+    fn test_tokenise_assign() {
+        let tokens: Vec<Token> = tokenise("a = 1").collect();
         assert_eq!(
             tokens,
             vec![
@@ -582,8 +582,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_if() {
-        let tokens: Vec<Token> = tokenize("if (1) { 2 } else { 3 }").collect();
+    fn test_tokenise_if() {
+        let tokens: Vec<Token> = tokenise("if (1) { 2 } else { 3 }").collect();
         assert_eq!(
             tokens,
             vec![
@@ -609,8 +609,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_gt() {
-        let tokens: Vec<Token> = tokenize("if (1 > 2) { 2 } else { 3 }").collect();
+    fn test_tokenise_gt() {
+        let tokens: Vec<Token> = tokenise("if (1 > 2) { 2 } else { 3 }").collect();
         assert_eq!(
             tokens,
             vec![
@@ -638,8 +638,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_caret() {
-        let tokens: Vec<Token> = tokenize("a ^= 10;").collect();
+    fn test_tokenise_caret() {
+        let tokens: Vec<Token> = tokenise("a ^= 10;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -653,8 +653,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_vertical_bar() {
-        let tokens: Vec<Token> = tokenize("a |= 10;").collect();
+    fn test_tokenise_vertical_bar() {
+        let tokens: Vec<Token> = tokenise("a |= 10;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -668,8 +668,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_percent() {
-        let tokens: Vec<Token> = tokenize("a %= 10;").collect();
+    fn test_tokenise_percent() {
+        let tokens: Vec<Token> = tokenise("a %= 10;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -683,8 +683,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_lt() {
-        let tokens: Vec<Token> = tokenize("if (1 < 2) { 2 } else { 3 }").collect();
+    fn test_tokenise_lt() {
+        let tokens: Vec<Token> = tokenise("if (1 < 2) { 2 } else { 3 }").collect();
         assert_eq!(
             tokens,
             vec![
@@ -712,8 +712,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_while() {
-        let tokens: Vec<Token> = tokenize("while (1) return 2;").collect();
+    fn test_tokenise_while() {
+        let tokens: Vec<Token> = tokenise("while (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -735,8 +735,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_new_line() {
-        let tokens: Vec<Token> = tokenize("1\n;").collect();
+    fn test_tokenise_new_line() {
+        let tokens: Vec<Token> = tokenise("1\n;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -747,8 +747,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_float() {
-        let tokens: Vec<Token> = tokenize("1.342\n;").collect();
+    fn test_tokenise_float() {
+        let tokens: Vec<Token> = tokenise("1.342\n;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -760,7 +760,7 @@ mod tests {
 
     #[test]
     fn test_tokenises_division() {
-        let tokens: Vec<Token> = tokenize("//this is a comment\nwhile (2 / 2 == 1) return 2;").collect();
+        let tokens: Vec<Token> = tokenise("//this is a comment\nwhile (2 / 2 == 1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -788,7 +788,7 @@ mod tests {
 
     #[test]
     fn test_doesnt_tokenise_comments() {
-        let tokens: Vec<Token> = tokenize("//this is a comment\nwhile (1) return 2;").collect();
+        let tokens: Vec<Token> = tokenise("//this is a comment\nwhile (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -811,7 +811,7 @@ mod tests {
 
     #[test]
     fn test_doesnt_tokenise_multiline_comments() {
-        let tokens: Vec<Token> = tokenize("/*this is a comment*/\nwhile (1) return 2;").collect();
+        let tokens: Vec<Token> = tokenise("/*this is a comment*/\nwhile (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -834,7 +834,7 @@ mod tests {
 
     #[test]
     fn test_doesnt_tokenise_multiline_comments_2() {
-        let tokens: Vec<Token> = tokenize("/*this\nis\na\nmultiline\ncomment*/\nwhile (1) return 2;").collect();
+        let tokens: Vec<Token> = tokenise("/*this\nis\na\nmultiline\ncomment*/\nwhile (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -857,7 +857,7 @@ mod tests {
 
     #[test]
     fn test_doesnt_tokenise_multiline_comments_with_random_asterisks() {
-        let tokens: Vec<Token> = tokenize("/*this\n *is\na\n*multiline*\ncomment*/\nwhile (1) return 2;").collect();
+        let tokens: Vec<Token> = tokenise("/*this\n *is\na\n*multiline*\ncomment*/\nwhile (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -879,8 +879,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_for() {
-        let tokens: Vec<Token> = tokenize("for (i = 10; i; i = i - 1) 2;").collect();
+    fn test_tokenise_for() {
+        let tokens: Vec<Token> = tokenise("for (i = 10; i; i = i - 1) 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -911,8 +911,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_integer_declaration() {
-        let tokens: Vec<Token> = tokenize("let a: u16 = 54354;").collect();
+    fn test_tokenise_integer_declaration() {
+        let tokens: Vec<Token> = tokenise("let a: u16 = 54354;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -928,8 +928,8 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_array() {
-        let tokens: Vec<Token> = tokenize("a[0]").collect();
+    fn test_tokenise_array() {
+        let tokens: Vec<Token> = tokenise("a[0]").collect();
         assert_eq!(
             tokens,
             vec![
