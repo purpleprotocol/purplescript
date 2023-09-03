@@ -18,6 +18,11 @@ pub enum Symbol {
     Slash,
     ParenthesisLeft,
     ParenthesisRight,
+    GreaterThan,
+    LesserThan,
+    Caret,
+    VerticalBar,
+    Percent,
     Plus,
     Colon,
     Semicolon,
@@ -111,10 +116,7 @@ impl<'a> Tokens<'a> {
     fn consume_number_literal(&mut self) -> String {
         let mut buf = String::new();
         while let Some(&character) = self.chars.peek() {
-            if character.is_ascii_digit() {
-                self.consume_character();
-                buf.push(character);
-            } else if character == '.' { 
+            if character.is_ascii_digit() || character == '.' {
                 self.consume_character();
                 buf.push(character);
             } else {
@@ -308,6 +310,14 @@ impl Iterator for Tokens<'_> {
                     '=' => {
                         self.consume_character();
                         token = Some(Token::new(TokenKind::Symbol(Symbol::Equal), position));
+                    }
+                    '>' => {
+                        self.consume_character();
+                        token = Some(Token::new(TokenKind::Symbol(Symbol::GreaterThan), position));
+                    }
+                    '<' => {
+                        self.consume_character();
+                        token = Some(Token::new(TokenKind::Symbol(Symbol::LesserThan), position));
                     }
                     '&' => {
                         self.consume_character();
@@ -582,6 +592,64 @@ mod tests {
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(19, 1)),
                 Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(21, 1)),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(23, 1)),
+            ]
+        )
+    }
+
+    #[test]
+    fn test_tokenize_gt() {
+        let tokens: Vec<Token> = tokenize("if (1 > 2) { 2 } else { 3 }").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new(TokenKind::Keyword(Keyword::If), Position::new(1, 1)),
+                Token::new(
+                    TokenKind::Symbol(Symbol::ParenthesisLeft),
+                    Position::new(4, 1)
+                ),
+                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(5, 1)),
+                Token::new(TokenKind::Symbol(Symbol::GreaterThan), Position::new(7, 1)),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(9, 1)),
+                Token::new(
+                    TokenKind::Symbol(Symbol::ParenthesisRight),
+                    Position::new(10, 1)
+                ),
+                Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(12, 1)),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(14, 1)),
+                Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(16, 1)),
+                Token::new(TokenKind::Keyword(Keyword::Else), Position::new(18, 1)),
+                Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(23, 1)),
+                Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(25, 1)),
+                Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(27, 1)),
+            ]
+        )
+    }
+
+    #[test]
+    fn test_tokenize_lt() {
+        let tokens: Vec<Token> = tokenize("if (1 < 2) { 2 } else { 3 }").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new(TokenKind::Keyword(Keyword::If), Position::new(1, 1)),
+                Token::new(
+                    TokenKind::Symbol(Symbol::ParenthesisLeft),
+                    Position::new(4, 1)
+                ),
+                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(5, 1)),
+                Token::new(TokenKind::Symbol(Symbol::LesserThan), Position::new(7, 1)),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(9, 1)),
+                Token::new(
+                    TokenKind::Symbol(Symbol::ParenthesisRight),
+                    Position::new(10, 1)
+                ),
+                Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(12, 1)),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(14, 1)),
+                Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(16, 1)),
+                Token::new(TokenKind::Keyword(Keyword::Else), Position::new(18, 1)),
+                Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(23, 1)),
+                Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(25, 1)),
+                Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(27, 1)),
             ]
         )
     }
