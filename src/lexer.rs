@@ -323,6 +323,10 @@ impl Iterator for Tokens<'_> {
                         self.consume_character();
                         token = Some(Token::new(TokenKind::Symbol(Symbol::Caret), position));
                     }
+                    '|' => {
+                        self.consume_character();
+                        token = Some(Token::new(TokenKind::Symbol(Symbol::VerticalBar), position));
+                    }
                     '&' => {
                         self.consume_character();
                         token = Some(Token::new(TokenKind::Symbol(Symbol::Ampersand), position));
@@ -637,6 +641,21 @@ mod tests {
             vec![
                 Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Caret), Position::new(3, 1)),
+                Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(4, 1)),
+                Token::new(TokenKind::NumberLiteral("10".to_owned()), Position::new(6, 1)),
+                Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(8, 1)),
+            ]
+        )
+    }
+
+    #[test]
+    fn test_tokenize_vertical_bar() {
+        let tokens: Vec<Token> = tokenize("a |= 10;").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
+                Token::new(TokenKind::Symbol(Symbol::VerticalBar), Position::new(3, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(4, 1)),
                 Token::new(TokenKind::NumberLiteral("10".to_owned()), Position::new(6, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(8, 1)),
