@@ -109,16 +109,19 @@ impl<'a> Tokens<'a> {
     }
 
     fn consume_number_literal(&mut self) -> String {
-        let mut number = 0;
+        let mut buf = String::new();
         while let Some(&character) = self.chars.peek() {
             if character.is_ascii_digit() {
                 self.consume_character();
-                number = number * 10 + character.to_digit(10).unwrap();
+                buf.push(character);
+            } else if character == '.' { 
+                self.consume_character();
+                buf.push(character);
             } else {
                 break;
             }
         }
-        number.to_string()
+        buf
     }
 
     fn consume_character_literal(&mut self) -> char {
@@ -613,6 +616,18 @@ mod tests {
             tokens,
             vec![
                 Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(1, 1)),
+                Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(1, 2)),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_tokenize_float() {
+        let tokens: Vec<Token> = tokenize("1.342\n;").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new(TokenKind::NumberLiteral("1.342".to_owned()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(1, 2)),
             ]
         );
