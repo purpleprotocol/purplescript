@@ -234,6 +234,19 @@ impl<'a> Tokens<'a> {
                     break;
                 }
 
+                Some(c) if c.is_whitespace() => {
+                    match self.state {
+                        LexerState::CommentStart => {
+                            self.state = LexerState::HitSlash;
+                            break;
+                        }
+                        LexerState::CommentMultiLineHitEndAsterisk => {
+                            self.state = LexerState::CommentMultiLineHitStartAsterisk;
+                        }
+                        _ => { }
+                    }
+                }
+
                 _ => {
                     match self.state {
                         LexerState::CommentStart => {
@@ -244,7 +257,6 @@ impl<'a> Tokens<'a> {
                         }
                         _ => { }
                     }
-                    //self.consume_whitespaces_single_line();
                 }
             }
         }
@@ -304,8 +316,15 @@ impl Iterator for Tokens<'_> {
                     }
                     '/' => {
                         self.consume_comment();
+
+                        // Not a comment but division.
+                        if let LexerState::HitSlash = self.state {
+                            self.state = LexerState::Any;
+                            token = Some(Token::new(TokenKind::Symbol(Symbol::Slash), position));
+                            break;
+                        }
+
                         continue;
-                        //token = Some(Token::new(TokenKind::Symbol(Symbol::Slash), position));
                     }
                     '(' => {
                         self.consume_character();
@@ -466,6 +485,7 @@ enum LexerState {
     CommentMultiLineHitStartAsterisk,
     CommentMultiLineHitEndAsterisk,
     CommentSingleLine,
+    HitSlash,
 }
 
 #[cfg(test)]
@@ -594,6 +614,34 @@ mod tests {
             vec![
                 Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(1, 2)),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_tokenises_division() {
+        let tokens: Vec<Token> = tokenize("//this is a comment\nwhile (2 / 2 == 1) return 2;").collect();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::new(TokenKind::Keyword(Keyword::While), Position::new(1, 2)),
+                Token::new(
+                    TokenKind::Symbol(Symbol::ParenthesisLeft),
+                    Position::new(7, 2)
+                ),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(8, 2)),
+                Token::new(TokenKind::Symbol(Symbol::Slash), Position::new(10, 2)),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(12, 2)),
+                Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(14, 2)),
+                Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(15, 2)),
+                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(17, 2)),
+                Token::new(
+                    TokenKind::Symbol(Symbol::ParenthesisRight),
+                    Position::new(18, 2)
+                ),
+                Token::new(TokenKind::Keyword(Keyword::Return), Position::new(20, 2)),
+                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(27, 2)),
+                Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(28, 2)),
             ]
         );
     }
