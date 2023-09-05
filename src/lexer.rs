@@ -5,7 +5,7 @@ pub fn tokenise(input: &str) -> Tokens {
     Tokens::new(input)
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Symbol {
     Ampersand,
     Asterisk,
@@ -30,7 +30,7 @@ pub enum Symbol {
     Comma,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Keyword {
     Function,
     U8,
@@ -61,7 +61,7 @@ pub enum Keyword {
     Address,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TokenKind {
     Identifier(String),
     NumberLiteral(String),
@@ -88,7 +88,7 @@ impl Default for Position {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Token {
     pub kind: TokenKind,
     pub position: Position,
@@ -151,7 +151,8 @@ impl<'a> Tokens<'a> {
     fn consume_identifier(&mut self) -> String {
         let mut string = String::new();
         while let Some(&character) = self.chars.peek() {
-            if character.is_ascii_alphanumeric() || character == '_' {
+            // Allow ascii alphanumeric, underscores, and dollars in identifiers
+            if character.is_ascii_alphanumeric() || character == '_' || character == '$' {
                 string.push(character);
                 self.consume_character();
             } else {
