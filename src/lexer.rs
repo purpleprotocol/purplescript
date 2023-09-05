@@ -26,6 +26,8 @@ pub enum Symbol {
     Plus,
     Colon,
     Semicolon,
+    Dot,
+    Comma,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -149,7 +151,7 @@ impl<'a> Tokens<'a> {
     fn consume_identifier(&mut self) -> String {
         let mut string = String::new();
         while let Some(&character) = self.chars.peek() {
-            if character.is_ascii_alphanumeric() {
+            if character.is_ascii_alphanumeric() || character == '_' {
                 string.push(character);
                 self.consume_character();
             } else {
@@ -338,6 +340,14 @@ impl Iterator for Tokens<'_> {
                     '*' => {
                         self.consume_character();
                         token = Some(Token::new(TokenKind::Symbol(Symbol::Asterisk), position));
+                    }
+                    '.' => {
+                        self.consume_character();
+                        token = Some(Token::new(TokenKind::Symbol(Symbol::Dot), position));
+                    }
+                    ',' => {
+                        self.consume_character();
+                        token = Some(Token::new(TokenKind::Symbol(Symbol::Comma), position));
                     }
                     '/' => {
                         self.consume_comment();
