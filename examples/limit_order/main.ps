@@ -33,10 +33,14 @@ function main(
 
     let outputs = XPU.outputs();
     let transferredSum: i128 = 0;
+    let verifiedTakerSig = false;
 
     for (let i = 0; i < XPU.outputsLen(); i++) {
         if (outputs[i].colourHash == assetIn && outputs[i].colouredAddress == lpReceiverAddress) {
-            XPU.verifyEd25519(this.inputBytes, outAddress as [u8] + outScriptHash as [u8], outputs[i].input.publicKey, takerSignature);
+            if (!verifiedTakerSig) {
+                verifiedTakerSig = true;
+                XPU.verifyEd25519(this.inputBytes, outAddress as [u8] + outScriptHash as [u8], outputs[i].input.publicKey, takerSignature);
+            }
             transferredSum += outputs[i].amount;
         }
     }
