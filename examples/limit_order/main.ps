@@ -1,12 +1,36 @@
-function main(rate: decimal, allowed: i128, minAmount: i128, deadline: i32, lpReceiverAddress: address, assetIn: asset, malleable outAddress: address, malleable outScriptHash: address) {
-    if (XPU.block_timestamp > deadline) {
+function main(
+    // Rate at which we want to swap
+    rate: decimal,
+
+    // Max allowed amount per swap
+    allowed: i128, 
+    
+    // Min amount required per swap
+    minAmount: i128, 
+
+    // No swaps can be performed after the deadline
+    deadline: i32, 
+
+    // Address of the liquidity provider
+    lpReceiverAddress: address, 
+
+    // Input asset
+    assetIn: asset,
+    
+    // Output address, chosen by the liquidity taker
+    malleable outAddress: address, 
+
+    // Output script hash, chosen by the liquidity taker
+    malleable outScriptHash: address
+) {
+    if (XPU.blockTimestamp > deadline) {
         revert("deadline passed");
     }
 
     let outputs = XPU.outputs();
     let transferredSum: i128 = 0;
 
-    for (let i; i < XPU.outputsLen(); i++) {
+    for (let i = 0; i < XPU.outputsLen(); i++) {
         if (outputs[i].colourHash == assetIn && outputs[i].colouredAddress == lpReceiverAddress) {
             transferredSum += outputs[i].amount;
         }
@@ -20,6 +44,9 @@ function main(rate: decimal, allowed: i128, minAmount: i128, deadline: i32, lpRe
         revert("transferred sum is greater than allowed");
     }
     
+    // Output of the liquidity taker
     XPU.pushOut((transferredSum as decimal * rate) as i128, outAddress, outScriptHash);
+    
+    // Push this output again minus the taken amount
     return XPU.pushOut(this);
 }
