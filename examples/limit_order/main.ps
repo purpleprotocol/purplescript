@@ -21,7 +21,11 @@ function main(
     malleable outAddress: address, 
 
     // Output script hash, chosen by the liquidity taker
-    malleable outScriptHash: address
+    malleable outScriptHash: address,
+
+    // Taker signature over the outAddress and outScriptHash, we need these
+    // as otherwise someone can change them and steal the takers funds.
+    malleable takerSignature: [u8],
 ) {
     if (XPU.blockTimestamp > deadline) {
         revert("deadline passed");
@@ -32,6 +36,7 @@ function main(
 
     for (let i = 0; i < XPU.outputsLen(); i++) {
         if (outputs[i].colourHash == assetIn && outputs[i].colouredAddress == lpReceiverAddress) {
+            XPU.verifyEd25519(this.inputBytes, outAddress as [u8] + outScriptHash as [u8], outputs[i].input.publicKey, takerSignature);
             transferredSum += outputs[i].amount;
         }
     }
