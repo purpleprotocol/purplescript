@@ -180,35 +180,31 @@ impl<'a> Tokens<'a> {
         loop {
             match self.consume_character() {
                 // Multiline comment
-                Some('*') => {
-                    match self.state {
-                        LexerState::CommentStart => {
-                            self.state = LexerState::CommentMultiLineHitStartAsterisk;
-                        }
-
-                        LexerState::CommentMultiLineHitStartAsterisk => {
-                            self.state = LexerState::CommentMultiLineHitEndAsterisk;
-                        }
-
-                        _ => { }
+                Some('*') => match self.state {
+                    LexerState::CommentStart => {
+                        self.state = LexerState::CommentMultiLineHitStartAsterisk;
                     }
-                }
+
+                    LexerState::CommentMultiLineHitStartAsterisk => {
+                        self.state = LexerState::CommentMultiLineHitEndAsterisk;
+                    }
+
+                    _ => {}
+                },
 
                 // Single line comment
-                Some('/') => {
-                    match self.state {
-                        LexerState::CommentStart => {
-                            self.state = LexerState::CommentSingleLine;
-                        }
-
-                        LexerState::CommentMultiLineHitEndAsterisk => {
-                            self.state = LexerState::Any;
-                            break;
-                        }
-
-                        _ => { }
+                Some('/') => match self.state {
+                    LexerState::CommentStart => {
+                        self.state = LexerState::CommentSingleLine;
                     }
-                }
+
+                    LexerState::CommentMultiLineHitEndAsterisk => {
+                        self.state = LexerState::Any;
+                        break;
+                    }
+
+                    _ => {}
+                },
 
                 Some('\n') => {
                     match self.state {
@@ -223,7 +219,7 @@ impl<'a> Tokens<'a> {
                             unimplemented!(); // TODO: Throw error here
                             break;
                         }
-                        
+
                         LexerState::CommentMultiLineHitEndAsterisk => {
                             self.state = LexerState::CommentMultiLineHitStartAsterisk;
                             self.position.column = 1;
@@ -242,18 +238,16 @@ impl<'a> Tokens<'a> {
                     break;
                 }
 
-                Some(c) if c.is_whitespace() => {
-                    match self.state {
-                        LexerState::CommentStart => {
-                            self.state = LexerState::HitSlash;
-                            break;
-                        }
-                        LexerState::CommentMultiLineHitEndAsterisk => {
-                            self.state = LexerState::CommentMultiLineHitStartAsterisk;
-                        }
-                        _ => { }
+                Some(c) if c.is_whitespace() => match self.state {
+                    LexerState::CommentStart => {
+                        self.state = LexerState::HitSlash;
+                        break;
                     }
-                }
+                    LexerState::CommentMultiLineHitEndAsterisk => {
+                        self.state = LexerState::CommentMultiLineHitStartAsterisk;
+                    }
+                    _ => {}
+                },
 
                 _ => {
                     match self.state {
@@ -263,12 +257,11 @@ impl<'a> Tokens<'a> {
                         LexerState::CommentMultiLineHitEndAsterisk => {
                             self.state = LexerState::CommentMultiLineHitStartAsterisk;
                         }
-                        _ => { }
+                        _ => {}
                     }
                 }
             }
         }
-
     }
 
     fn consume_new_line(&mut self) -> Option<char> {
@@ -290,7 +283,7 @@ impl Iterator for Tokens<'_> {
         let mut token = None;
         loop {
             self.consume_whitespaces();
-            
+
             if let Some(&character) = self.chars.peek() {
                 let position = self.position.clone();
                 match character {
@@ -413,91 +406,158 @@ impl Iterator for Tokens<'_> {
                             let name = self.consume_identifier();
                             match &*name {
                                 "function" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::Function), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Function),
+                                        position,
+                                    ));
                                 }
                                 "let" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::Let), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Let),
+                                        position,
+                                    ));
                                 }
                                 "u8" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::U8), position));
+                                    token =
+                                        Some(Token::new(TokenKind::Keyword(Keyword::U8), position));
                                 }
                                 "u16" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::U16), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::U16),
+                                        position,
+                                    ));
                                 }
                                 "u32" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::U32), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::U32),
+                                        position,
+                                    ));
                                 }
                                 "u64" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::U64), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::U64),
+                                        position,
+                                    ));
                                 }
                                 "u128" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::U128), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::U128),
+                                        position,
+                                    ));
                                 }
                                 "ubig" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::UBIG), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::UBIG),
+                                        position,
+                                    ));
                                 }
                                 "i8" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::I8), position));
+                                    token =
+                                        Some(Token::new(TokenKind::Keyword(Keyword::I8), position));
                                 }
                                 "i16" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::I16), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::I16),
+                                        position,
+                                    ));
                                 }
                                 "i32" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::I32), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::I32),
+                                        position,
+                                    ));
                                 }
                                 "i64" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::I64), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::I64),
+                                        position,
+                                    ));
                                 }
                                 "i128" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::I128), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::I128),
+                                        position,
+                                    ));
                                 }
                                 "ibig" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::IBIG), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::IBIG),
+                                        position,
+                                    ));
                                 }
                                 "f32" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::F32), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::F32),
+                                        position,
+                                    ));
                                 }
                                 "f64" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::F64), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::F64),
+                                        position,
+                                    ));
                                 }
                                 "decimal" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::Decimal), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Decimal),
+                                        position,
+                                    ));
                                 }
                                 "malleable" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::Malleable), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Malleable),
+                                        position,
+                                    ));
                                 }
                                 "asset" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::Asset), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Asset),
+                                        position,
+                                    ));
                                 }
                                 "address" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::Address), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Address),
+                                        position,
+                                    ));
                                 }
                                 "revert" => {
-                                    token =
-                                        Some(Token::new(TokenKind::Keyword(Keyword::Revert), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Revert),
+                                        position,
+                                    ));
                                 }
                                 "if" => {
-                                    token = Some(Token::new(TokenKind::Keyword(Keyword::If), position));
+                                    token =
+                                        Some(Token::new(TokenKind::Keyword(Keyword::If), position));
                                 }
                                 "as" => {
                                     token =
                                         Some(Token::new(TokenKind::Keyword(Keyword::As), position))
                                 }
                                 "else" => {
-                                    token =
-                                        Some(Token::new(TokenKind::Keyword(Keyword::Else), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Else),
+                                        position,
+                                    ));
                                 }
                                 "return" => {
-                                    token =
-                                        Some(Token::new(TokenKind::Keyword(Keyword::Return), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::Return),
+                                        position,
+                                    ));
                                 }
                                 "while" => {
-                                    token =
-                                        Some(Token::new(TokenKind::Keyword(Keyword::While), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::While),
+                                        position,
+                                    ));
                                 }
                                 "for" => {
-                                    token =
-                                        Some(Token::new(TokenKind::Keyword(Keyword::For), position));
+                                    token = Some(Token::new(
+                                        TokenKind::Keyword(Keyword::For),
+                                        position,
+                                    ));
                                 }
                                 _ => {
                                     token = Some(Token::new(TokenKind::Identifier(name), position));
@@ -546,11 +606,20 @@ mod tests {
         assert_eq!(
             tokens,
             vec![
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(1, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(1, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Plus), Position::new(3, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(5, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(5, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Minus), Position::new(7, 1)),
-                Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(9, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("3".to_owned()),
+                    Position::new(9, 1)
+                ),
             ]
         );
     }
@@ -587,7 +656,10 @@ mod tests {
             vec![
                 Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(3, 1)),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(5, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(5, 1)
+                ),
             ]
         )
     }
@@ -603,17 +675,26 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(4, 1)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(5, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(5, 1)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(6, 1)
                 ),
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(8, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(10, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(10, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(12, 1)),
                 Token::new(TokenKind::Keyword(Keyword::Else), Position::new(14, 1)),
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(19, 1)),
-                Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(21, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("3".to_owned()),
+                    Position::new(21, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(23, 1)),
             ]
         )
@@ -630,19 +711,31 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(4, 1)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(5, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(5, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::GreaterThan), Position::new(7, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(9, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(9, 1)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(10, 1)
                 ),
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(12, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(14, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(14, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(16, 1)),
                 Token::new(TokenKind::Keyword(Keyword::Else), Position::new(18, 1)),
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(23, 1)),
-                Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(25, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("3".to_owned()),
+                    Position::new(25, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(27, 1)),
             ]
         )
@@ -657,7 +750,10 @@ mod tests {
                 Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Caret), Position::new(3, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(4, 1)),
-                Token::new(TokenKind::NumberLiteral("10".to_owned()), Position::new(6, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("10".to_owned()),
+                    Position::new(6, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(8, 1)),
             ]
         )
@@ -672,7 +768,10 @@ mod tests {
                 Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::VerticalBar), Position::new(3, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(4, 1)),
-                Token::new(TokenKind::NumberLiteral("10".to_owned()), Position::new(6, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("10".to_owned()),
+                    Position::new(6, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(8, 1)),
             ]
         )
@@ -687,7 +786,10 @@ mod tests {
                 Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Percent), Position::new(3, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(4, 1)),
-                Token::new(TokenKind::NumberLiteral("10".to_owned()), Position::new(6, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("10".to_owned()),
+                    Position::new(6, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(8, 1)),
             ]
         )
@@ -704,19 +806,31 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(4, 1)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(5, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(5, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::LesserThan), Position::new(7, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(9, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(9, 1)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(10, 1)
                 ),
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(12, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(14, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(14, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(16, 1)),
                 Token::new(TokenKind::Keyword(Keyword::Else), Position::new(18, 1)),
                 Token::new(TokenKind::Symbol(Symbol::BraceLeft), Position::new(23, 1)),
-                Token::new(TokenKind::NumberLiteral("3".to_owned()), Position::new(25, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("3".to_owned()),
+                    Position::new(25, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BraceRight), Position::new(27, 1)),
             ]
         )
@@ -733,13 +847,19 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(7, 1)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(8, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(8, 1)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(9, 1)
                 ),
                 Token::new(TokenKind::Keyword(Keyword::Return), Position::new(11, 1)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(18, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(18, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(19, 1)),
             ]
         )
@@ -751,7 +871,10 @@ mod tests {
         assert_eq!(
             tokens,
             vec![
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(1, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(1, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(1, 2)),
             ]
         );
@@ -763,7 +886,10 @@ mod tests {
         assert_eq!(
             tokens,
             vec![
-                Token::new(TokenKind::NumberLiteral("1.342".to_owned()), Position::new(1, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1.342".to_owned()),
+                    Position::new(1, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(1, 2)),
             ]
         );
@@ -771,7 +897,8 @@ mod tests {
 
     #[test]
     fn test_tokenises_division() {
-        let tokens: Vec<Token> = tokenise("//this is a comment\nwhile (2 / 2 == 1) return 2;").collect();
+        let tokens: Vec<Token> =
+            tokenise("//this is a comment\nwhile (2 / 2 == 1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -780,18 +907,30 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(7, 2)
                 ),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(8, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(8, 2)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Slash), Position::new(10, 2)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(12, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(12, 2)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(14, 2)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(15, 2)),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(17, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(17, 2)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(18, 2)
                 ),
                 Token::new(TokenKind::Keyword(Keyword::Return), Position::new(20, 2)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(27, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(27, 2)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(28, 2)),
             ]
         );
@@ -808,13 +947,19 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(7, 2)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(8, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(8, 2)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(9, 2)
                 ),
                 Token::new(TokenKind::Keyword(Keyword::Return), Position::new(11, 2)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(18, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(18, 2)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(19, 2)),
             ]
         );
@@ -831,13 +976,19 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(7, 2)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(8, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(8, 2)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(9, 2)
                 ),
                 Token::new(TokenKind::Keyword(Keyword::Return), Position::new(11, 2)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(18, 2)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(18, 2)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(19, 2)),
             ]
         );
@@ -845,7 +996,8 @@ mod tests {
 
     #[test]
     fn test_doesnt_tokenise_multiline_comments_2() {
-        let tokens: Vec<Token> = tokenise("/*this\nis\na\nmultiline\ncomment*/\nwhile (1) return 2;").collect();
+        let tokens: Vec<Token> =
+            tokenise("/*this\nis\na\nmultiline\ncomment*/\nwhile (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -854,13 +1006,19 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(7, 6)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(8, 6)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(8, 6)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(9, 6)
                 ),
                 Token::new(TokenKind::Keyword(Keyword::Return), Position::new(11, 6)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(18, 6)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(18, 6)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(19, 6)),
             ]
         );
@@ -868,7 +1026,8 @@ mod tests {
 
     #[test]
     fn test_doesnt_tokenise_multiline_comments_with_random_asterisks() {
-        let tokens: Vec<Token> = tokenise("/*this\n *is\na\n*multiline*\ncomment*/\nwhile (1) return 2;").collect();
+        let tokens: Vec<Token> =
+            tokenise("/*this\n *is\na\n*multiline*\ncomment*/\nwhile (1) return 2;").collect();
         assert_eq!(
             tokens,
             vec![
@@ -877,13 +1036,19 @@ mod tests {
                     TokenKind::Symbol(Symbol::ParenthesisLeft),
                     Position::new(7, 6)
                 ),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(8, 6)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(8, 6)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(9, 6)
                 ),
                 Token::new(TokenKind::Keyword(Keyword::Return), Position::new(11, 6)),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(18, 6)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(18, 6)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(19, 6)),
             ]
         );
@@ -902,7 +1067,10 @@ mod tests {
                 ),
                 Token::new(TokenKind::Identifier("i".to_string()), Position::new(6, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(8, 1)),
-                Token::new(TokenKind::NumberLiteral("10".to_owned()), Position::new(10, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("10".to_owned()),
+                    Position::new(10, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(12, 1)),
                 Token::new(TokenKind::Identifier("i".to_string()), Position::new(14, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(15, 1)),
@@ -910,12 +1078,18 @@ mod tests {
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(19, 1)),
                 Token::new(TokenKind::Identifier("i".to_string()), Position::new(21, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Minus), Position::new(23, 1)),
-                Token::new(TokenKind::NumberLiteral("1".to_owned()), Position::new(25, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("1".to_owned()),
+                    Position::new(25, 1)
+                ),
                 Token::new(
                     TokenKind::Symbol(Symbol::ParenthesisRight),
                     Position::new(26, 1)
                 ),
-                Token::new(TokenKind::NumberLiteral("2".to_owned()), Position::new(28, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("2".to_owned()),
+                    Position::new(28, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(29, 1)),
             ]
         )
@@ -932,7 +1106,10 @@ mod tests {
                 Token::new(TokenKind::Symbol(Symbol::Colon), Position::new(6, 1)),
                 Token::new(TokenKind::Keyword(Keyword::U16), Position::new(8, 1)),
                 Token::new(TokenKind::Symbol(Symbol::Equal), Position::new(12, 1)),
-                Token::new(TokenKind::NumberLiteral("54354".to_owned()), Position::new(14, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("54354".to_owned()),
+                    Position::new(14, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::Semicolon), Position::new(19, 1)),
             ]
         );
@@ -946,7 +1123,10 @@ mod tests {
             vec![
                 Token::new(TokenKind::Identifier("a".to_string()), Position::new(1, 1)),
                 Token::new(TokenKind::Symbol(Symbol::BracketLeft), Position::new(2, 1)),
-                Token::new(TokenKind::NumberLiteral("0".to_owned()), Position::new(3, 1)),
+                Token::new(
+                    TokenKind::NumberLiteral("0".to_owned()),
+                    Position::new(3, 1)
+                ),
                 Token::new(TokenKind::Symbol(Symbol::BracketRight), Position::new(4, 1)),
             ]
         );

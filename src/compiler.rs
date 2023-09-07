@@ -1,4 +1,4 @@
-use crate::lexer::{Token, Position, TokenKind, Symbol, Keyword};
+use crate::lexer::{Keyword, Position, Symbol, Token, TokenKind};
 
 pub struct Compiler {
     /// Compiler state
@@ -29,7 +29,6 @@ impl Compiler {
             out_bitmap: vec![],
             main_args_identifiers: vec![],
             out_malleable_args_count: 0,
-            main_args_len: 0,
         }
     }
 
@@ -41,28 +40,40 @@ impl Compiler {
 
             // We expected a function identifier
             (&CompilerState::Any, _) => {
-                return Err(CompilerErr::ExpectedFunctionDefinition(token.position.clone()));
+                return Err(CompilerErr::ExpectedFunctionDefinition(
+                    token.position.clone(),
+                ));
             }
 
             // Main function identifier
-            (&CompilerState::ExpectingFuncIdentifier, TokenKind::Identifier(identifier)) if identifier.as_str() == "main" => {
+            (&CompilerState::ExpectingFuncIdentifier, TokenKind::Identifier(identifier))
+                if identifier.as_str() == "main" =>
+            {
                 self.state = CompilerState::ExpectingMainFuncLeftParanthesis;
             }
 
             // Other function identifier
-            (&CompilerState::ExpectingFuncIdentifier, TokenKind::Identifier(identifier)) if identifier.as_str() != "main" => {
-                self.state = CompilerState::ExpectingFuncLeftParanthesis; 
+            (&CompilerState::ExpectingFuncIdentifier, TokenKind::Identifier(identifier))
+                if identifier.as_str() != "main" =>
+            {
+                self.state = CompilerState::ExpectingFuncLeftParanthesis;
             }
 
             (&CompilerState::ExpectingFuncIdentifier, _) => {
                 return Err(CompilerErr::ExpectedIdentifier(token.position.clone()));
             }
 
-            (&CompilerState::ExpectingMainFuncLeftParanthesis, TokenKind::Symbol(Symbol::ParenthesisLeft)) => {
+            (
+                &CompilerState::ExpectingMainFuncLeftParanthesis,
+                TokenKind::Symbol(Symbol::ParenthesisLeft),
+            ) => {
                 self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
             }
 
-            (&CompilerState::ExpectingFuncLeftParanthesis, TokenKind::Symbol(Symbol::ParenthesisLeft)) => {
+            (
+                &CompilerState::ExpectingFuncLeftParanthesis,
+                TokenKind::Symbol(Symbol::ParenthesisLeft),
+            ) => {
                 self.state = CompilerState::ExpectingFuncArgIdentifier;
             }
 
@@ -71,16 +82,19 @@ impl Compiler {
             }
 
             // We hit a malleable arg keyword
-            (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, TokenKind::Keyword(Keyword::Malleable)) => {
-                // Increment bitmap count 
+            (
+                &CompilerState::ExpectingMainFuncMalleableOrIdentifier,
+                TokenKind::Keyword(Keyword::Malleable),
+            ) => {
+                // Increment bitmap count
                 self.out_malleable_args_count += 1;
                 let desired_bitmap_len = (self.out_malleable_args_count - 1) / 8 + 1;
 
-                // Add new bitmap to the buffer 
+                // Add new bitmap to the buffer
                 if self.out_bitmap.len() < desired_bitmap_len {
                     self.out_bitmap.push(0x00);
                 }
-                
+
                 let bitmap_len = self.out_bitmap.len();
                 let bitmap_idx = self.out_malleable_args_count - 1;
                 let bitmap = self.out_bitmap.get_mut(bitmap_len - 1).unwrap();
@@ -90,7 +104,10 @@ impl Compiler {
             }
 
             // We didn't hit a malleable arg keywork but we hit an identifier
-            (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, TokenKind::Identifier(identifier)) => {
+            (
+                &CompilerState::ExpectingMainFuncMalleableOrIdentifier,
+                TokenKind::Identifier(identifier),
+            ) => {
                 self.main_args_identifiers.push(identifier);
                 self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
             }
@@ -99,9 +116,8 @@ impl Compiler {
                 return Err(CompilerErr::ExpectedIdentifier(token.position.clone()));
             }
 
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
-
 
         Ok(())
     }
@@ -121,7 +137,6 @@ pub enum CompilerErr {
 enum CompilerState {
     // General states
     //
-    
     /// Any func definition
     Any,
 
@@ -130,14 +145,13 @@ enum CompilerState {
 
     // Func definition states
     //
-    
     /// We hit a `function` definition, now we want the identifier.
     ExpectingFuncIdentifier,
 
     /// We hit the main function identifier, now we want the left paranthesis for the arguments.
     ExpectingMainFuncLeftParanthesis,
 
-    /// We hit the main function paranthesis for arguments, now we want the actual 
+    /// We hit the main function paranthesis for arguments, now we want the actual
     /// arguments which can be malleable or not.
     ExpectingMainFuncMalleableOrIdentifier,
 
@@ -159,7 +173,7 @@ enum CompilerState {
     /// We hit the function identifier, now we want the left paranthesis for the arguments.
     ExpectingFuncLeftParanthesis,
 
-    /// We hit the function paranthesis for arguments, now we want the actual 
+    /// We hit the function paranthesis for arguments, now we want the actual
     /// arguments.
     ExpectingFuncArgIdentifier,
 
@@ -174,7 +188,6 @@ enum CompilerState {
 
     /// We hit the start brace of the function body, now we want the actual body.
     ExpectingFuncBody,
-
     // Func bodies
     //
 }

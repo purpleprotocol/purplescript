@@ -1,0 +1,166 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # Run daily to catch when Rust updates cause problems to happen.
+  schedule:
+    - cron: '00 01 * * *'
+
+jobs:
+  test:
+    name: Test
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        toolchain: ["nightly"]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_INCREMENTAL: 0
+      RUST_BACKTRACE: 1
+
+    steps:
+      - name: disable git crlf conversion
+        run: git config --global core.autocrlf false
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          profile: minimal
+          default: true
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+  testwindows:
+    name: Test
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        toolchain: ["nightly-x86_64-pc-windows-gnu"]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_INCREMENTAL: 0
+      RUST_BACKTRACE: 1
+    defaults:
+        run:
+          shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            curl
+            git
+            diffutils 
+            base-devel
+            make 
+            mingw-w64-x86_64-clang
+            cmake
+            wget
+            m4
+      - run: MSYS2_PATH_TYPE=inherit echo "export PATH=\$PATH:/c/ghcup/env" >> ~/.bash_profile
+      - name: Export paths
+        run: |
+          echo "export PATH=/c/Users/runneradmin/.cargo/bin:$PATH" >> ~/.bash_profile;
+      - name: Echo path
+        run: |
+          echo $PATH;
+      - name: disable git crlf conversion
+        run: git config --global core.autocrlf false
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install Rust toolchain
+        run: curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain ${{ matrix.toolchain }} -y
+      - name: Test
+        run: cargo +${{ matrix.toolchain }} test --no-default-features --features "gui miner wallet rpc disk blake3sum runtime-clang disable_tests_on_windows"
+  buildbenches:
+    name: Build benches
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: ["nightly"]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_INCREMENTAL: 0
+      RUST_BACKTRACE: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          profile: minimal
+          default: true
+
+      - name: Build Benches
+        uses: actions-rs/cargo@v1
+        with:
+          command: bench
+          args: --no-run
+  lint:
+    name: Rustfmt / Clippy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          default: true
+          components: rustfmt, clippy
+
+      - name: Fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --workspace
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build
+        uses: docker/build-push-action@v3
+        with:
+          push: false
+          tags: purplecoin-core:latest
