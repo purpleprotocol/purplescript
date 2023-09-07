@@ -7,9 +7,6 @@ pub struct Compiler {
     /// Buffer for the main function
     out_main: Vec<u8>,
 
-    /// The number of args of main
-    main_args_len: usize,
-
     /// Indexes of main args identifiers
     main_args_identifiers: Vec<String>,
 
@@ -94,7 +91,6 @@ impl Compiler {
 
             // We didn't hit a malleable arg keywork but we hit an identifier
             (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, TokenKind::Identifier(identifier)) => {
-                self.main_args_len += 1;
                 self.main_args_identifiers.push(identifier);
                 self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
             }
