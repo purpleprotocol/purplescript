@@ -7,6 +7,12 @@ pub struct Compiler {
     /// Buffer for the main function
     out_main: Vec<u8>,
 
+    /// The number of args of main
+    main_args_len: usize,
+
+    /// Indexes of main args identifiers
+    main_args_identifiers: Vec<String>,
+
     /// Buffer for other functions
     out_funcs: Vec<Vec<u8>>,
 
@@ -24,7 +30,9 @@ impl Compiler {
             out_main: vec![],
             out_funcs: vec![],
             out_bitmap: vec![],
+            main_args_identifiers: vec![],
             out_malleable_args_count: 0,
+            main_args_len: 0,
         }
     }
 
@@ -69,10 +77,10 @@ impl Compiler {
             (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, TokenKind::Keyword(Keyword::Malleable)) => {
                 // Increment bitmap count 
                 self.out_malleable_args_count += 1;
-                let desired_bitmap_count = (self.out_malleable_args_count - 1) / 8 + 1;
+                let desired_bitmap_len = (self.out_malleable_args_count - 1) / 8 + 1;
 
                 // Add new bitmap to the buffer 
-                if self.out_bitmap.len() < desired_bitmap_count {
+                if self.out_bitmap.len() < desired_bitmap_len {
                     self.out_bitmap.push(0x00);
                 }
                 
@@ -83,7 +91,18 @@ impl Compiler {
 
                 self.state = CompilerState::ExpectingMainFuncMalleableIdentifier;
             }
-            
+
+            // We didn't hit a malleable arg keywork but we hit an identifier
+            (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, TokenKind::Identifier(identifier)) => {
+                self.main_args_len += 1;
+                self.main_args_identifiers.push(identifier);
+                self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
+            }
+
+            (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, _) => {
+                return Err(CompilerErr::ExpectedIdentifier(token.position.clone()));
+            }
+
             _ => unimplemented!()
         }
 
