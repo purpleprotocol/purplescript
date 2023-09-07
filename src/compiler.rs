@@ -12,6 +12,9 @@ pub struct Compiler {
 
     /// Buffer for the bitmap
     out_bitmap: Vec<u8>,
+
+    /// Number of bools written in the bitmap
+    out_bitmap_count: usize,
 }
 
 impl Compiler {
@@ -21,6 +24,7 @@ impl Compiler {
             out_main: vec![],
             out_funcs: vec![],
             out_bitmap: vec![],
+            out_bitmap_count: 0,
         }
     }
 
@@ -61,6 +65,25 @@ impl Compiler {
                 return Err(CompilerErr::ExpectedParanthesisLeft(token.position.clone()));
             }
 
+            // We hit a malleable arg keyword
+            (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, TokenKind::Keyword(Keyword::Malleable)) => {
+                // Increment bitmap count 
+                self.out_bitmap_count += 1;
+                let desired_bitmap_count = self.out_bitmap_count / 8 + 1;
+
+                // Add new bitmap to the buffer 
+                if self.out_bitmap.len() < desired_bitmap_count {
+                    self.out_bitmap.push(0x00);
+                }
+                
+                let bitmap_len = self.out_bitmap.len();
+                let bitmap_idx = self.out_bitmap_count - 1;
+                let bitmap = self.out_bitmap.get_mut(bitmap_len - 1).unwrap();
+                *bitmap |= 1 << bitmap_idx;
+
+                self.state = CompilerState::ExpectingMainFuncMalleableIdentifier;
+            }
+            
             _ => unimplemented!()
         }
 
