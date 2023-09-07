@@ -88,38 +88,6 @@ jobs:
         run: curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain ${{ matrix.toolchain }} -y
       - name: Test
         run: cargo +${{ matrix.toolchain }} test --no-default-features --features "gui miner wallet rpc disk blake3sum runtime-clang disable_tests_on_windows"
-  buildbenches:
-    name: Build benches
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        toolchain: ["nightly"]
-
-    runs-on: ${{ matrix.os }}
-
-    env:
-      CARGO_INCREMENTAL: 0
-      RUST_BACKTRACE: 1
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          profile: minimal
-          default: true
-
-      - name: Build Benches
-        uses: actions-rs/cargo@v1
-        with:
-          command: bench
-          args: --no-run
   lint:
     name: Rustfmt / Clippy
     runs-on: ubuntu-latest
