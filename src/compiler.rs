@@ -8,7 +8,7 @@ pub struct Compiler {
     out_main: Vec<u8>,
 
     /// Indexes of main args identifiers
-    main_args_identifiers: Vec<String>,
+    main_args_identifiers_with_args: Vec<(String, ArgType)>,
 
     /// Buffer for other functions
     out_funcs: Vec<Vec<u8>>,
@@ -27,7 +27,7 @@ impl Compiler {
             out_main: vec![],
             out_funcs: vec![],
             out_bitmap: vec![],
-            main_args_identifiers: vec![],
+            main_args_identifiers_with_args: vec![],
             out_malleable_args_count: 0,
         }
     }
@@ -108,12 +108,38 @@ impl Compiler {
                 &CompilerState::ExpectingMainFuncMalleableOrIdentifier,
                 TokenKind::Identifier(identifier),
             ) => {
-                self.main_args_identifiers.push(identifier);
-                self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
+                self.main_args_identifiers_with_args
+                    .push((identifier, ArgType::Any));
+                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, _) => {
                 return Err(CompilerErr::ExpectedIdentifier(token.position.clone()));
+            }
+
+            (
+                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis,
+                TokenKind::Symbol(Symbol::Colon),
+            ) => {
+                self.state = CompilerState::ExpectingMainFuncArgType;
+            }
+
+            (
+                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis,
+                TokenKind::Symbol(Symbol::Comma),
+            ) => {
+                self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
+            }
+
+            (
+                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis,
+                TokenKind::Symbol(Symbol::ParenthesisRight),
+            ) => {
+                self.state = CompilerState::ExpectingFuncBrace;
+            }
+
+            (&CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis, _) => {
+                return Err(CompilerErr::ExpectedColonOrComma(token.position.clone()));
             }
 
             _ => unimplemented!(),
@@ -132,6 +158,7 @@ pub enum CompilerErr {
     ExpectedFunctionDefinition(Position),
     ExpectedIdentifier(Position),
     ExpectedParanthesisLeft(Position),
+    ExpectedColonOrComma(Position),
 }
 
 enum CompilerState {
@@ -163,6 +190,9 @@ enum CompilerState {
     /// to end the main function definitions.
     ExpectingMainFuncColonCommaOrRightParanthesis,
 
+    /// We have hit a colon for a main function argument, we are now expecting the type
+    ExpectingMainFuncArgType,
+
     /// We finished the arguments definition, now we want the start brace
     /// of the main function body.
     ExpectingMainFuncBrace,
@@ -190,4 +220,25 @@ enum CompilerState {
     ExpectingFuncBody,
     // Func bodies
     //
+}
+
+enum ArgType {
+    Any,
+    U8,
+    U16,
+    U32,
+    U64,
+    U128,
+    UBIG,
+    I8,
+    I16,
+    I32,
+    I64,
+    I128,
+    IBIG,
+    F32,
+    F64,
+    Decimal,
+    Address,
+    Asset,
 }
