@@ -5,7 +5,6 @@ use std::fs;
 
 fn main() {
     let mut tokens: Vec<_> = vec![];
-    let _out_script: Vec<u8> = vec![];
 
     for entry in glob("./**/*.ps").expect("Failed to read .ps files") {
         match entry {

@@ -18,6 +18,9 @@ pub struct Compiler {
 
     /// Number of bools written in the bitmap
     out_malleable_args_count: usize,
+
+    /// If we found the main function or not
+    found_main: bool,
 }
 
 impl Compiler {
@@ -29,6 +32,7 @@ impl Compiler {
             out_bitmap: vec![],
             main_args_identifiers_with_args: vec![],
             out_malleable_args_count: 0,
+            found_main: false,
         }
     }
 
@@ -49,6 +53,13 @@ impl Compiler {
             (&CompilerState::ExpectingFuncIdentifier, TokenKind::Identifier(identifier))
                 if identifier.as_str() == "main" =>
             {
+                if self.found_main {
+                    return Err(CompilerErr::DuplicateMainDeclaration(
+                        token.position.clone(),
+                    ));
+                }
+
+                self.found_main = true;
                 self.state = CompilerState::ExpectingMainFuncLeftParanthesis;
             }
 
@@ -178,6 +189,7 @@ pub enum CompilerErr {
     ExpectedLeftParanthesis(Position),
     ExpectedColonCommaOrRightParanthesis(Position),
     ExpectedLeftBrace(Position),
+    DuplicateMainDeclaration(Position),
 }
 
 enum CompilerState {
