@@ -78,7 +78,7 @@ impl Compiler {
             }
 
             (&CompilerState::ExpectingFuncLeftParanthesis, _) => {
-                return Err(CompilerErr::ExpectedParanthesisLeft(token.position.clone()));
+                return Err(CompilerErr::ExpectedLeftParanthesis(token.position.clone()));
             }
 
             // We hit a malleable arg keyword
@@ -113,6 +113,14 @@ impl Compiler {
                 self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
             }
 
+            // We hit the right paranthesis after a comma. This is valid.
+            (
+                &CompilerState::ExpectingMainFuncMalleableOrIdentifier,
+                TokenKind::Symbol(Symbol::ParenthesisRight),
+            ) => {
+                self.state = CompilerState::ExpectingMainFuncBrace;
+            }
+
             (&CompilerState::ExpectingMainFuncMalleableOrIdentifier, _) => {
                 return Err(CompilerErr::ExpectedIdentifier(token.position.clone()));
             }
@@ -139,7 +147,9 @@ impl Compiler {
             }
 
             (&CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis, _) => {
-                return Err(CompilerErr::ExpectedColonOrComma(token.position.clone()));
+                return Err(CompilerErr::ExpectedColonCommaOrRightParanthesis(
+                    token.position.clone(),
+                ));
             }
 
             _ => unimplemented!(),
@@ -157,8 +167,8 @@ impl Compiler {
 pub enum CompilerErr {
     ExpectedFunctionDefinition(Position),
     ExpectedIdentifier(Position),
-    ExpectedParanthesisLeft(Position),
-    ExpectedColonOrComma(Position),
+    ExpectedLeftParanthesis(Position),
+    ExpectedColonCommaOrRightParanthesis(Position),
 }
 
 enum CompilerState {
