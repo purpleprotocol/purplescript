@@ -144,14 +144,16 @@ impl Compiler {
             }
 
             (
-                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis,
+                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis
+                | &CompilerState::ExpectingMainFuncCommaOrRightParanthesis,
                 TokenKind::Symbol(Symbol::Comma),
             ) => {
                 self.state = CompilerState::ExpectingMainFuncMalleableOrIdentifier;
             }
 
             (
-                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis,
+                &CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis
+                | &CompilerState::ExpectingMainFuncCommaOrRightParanthesis,
                 TokenKind::Symbol(Symbol::ParenthesisRight),
             ) => {
                 self.state = CompilerState::ExpectingFuncBrace;
@@ -176,119 +178,119 @@ impl Compiler {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::Address;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::Asset)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::Asset;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U8)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::U8;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U16)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::U16;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U32)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::U32;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U64)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::U64;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U128)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::U128;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::UBIG)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::UBIG;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I8)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::I8;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I16)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::I16;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I32)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::I32;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I64)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::I64;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I128)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::I128;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::IBIG)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::IBIG;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::F32)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::F32;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::F64)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::F64;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::Decimal)) => {
                 let (_, ref mut arg_type) =
                     self.main_args_identifiers_with_args.last_mut().unwrap();
                 *arg_type = ArgType::Decimal;
-                self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
+                self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             _ => unimplemented!(),
@@ -340,6 +342,10 @@ enum CompilerState {
     /// in order to specify the argument type, a comma, or the right paranthesis
     /// to end the main function definitions.
     ExpectingMainFuncColonCommaOrRightParanthesis,
+
+    /// We have just parsed an argument type, so we allow either a comma or
+    /// a right paranthesis.
+    ExpectingMainFuncCommaOrRightParanthesis,
 
     /// We have hit a colon for a main function argument, we are now expecting the type
     ExpectingMainFuncArgType,
