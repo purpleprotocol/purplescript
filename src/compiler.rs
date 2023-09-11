@@ -165,6 +165,12 @@ impl Compiler {
                 ));
             }
 
+            (&CompilerState::ExpectingMainFuncCommaOrRightParanthesis, _) => {
+                return Err(CompilerErr::ExpectedCommaOrRightParanthesis(
+                    token.position.clone(),
+                ));
+            }
+
             (&CompilerState::ExpectingMainFuncBrace, TokenKind::Symbol(Symbol::BraceLeft)) => {
                 self.state = CompilerState::ExpectingMainFuncBody;
             }
@@ -310,6 +316,7 @@ pub enum CompilerErr {
     ExpectedIdentifier(Position),
     ExpectedLeftParanthesis(Position),
     ExpectedColonCommaOrRightParanthesis(Position),
+    ExpectedCommaOrRightParanthesis(Position),
     ExpectedLeftBrace(Position),
     DuplicateMainDeclaration(Position),
 }
