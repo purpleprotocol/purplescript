@@ -33,14 +33,19 @@ function main(
         revert("deadline passed");
     }
 
-    let outputs = XPU.outputs();
     let transferredSum: i128 = 0;
 
     for (let i = 0; i < XPU.outputsLen(); i++) {
-        if (outputs[i].colourHash == assetIn && outputs[i].colouredAddress == lpReceiverAddress) {
+        let output = XPU.getOutputAt(i);
+
+        if (output == this) {
+            continue;
+        }
+
+        if (output.colourHash == assetIn && output.colouredAddress == lpReceiverAddress) {
             let signature = takerSignatures.takeFront(64);
-            XPU.verifyEd25519(this.inputBytes, outAddress as [u8] + outScriptHash as [u8], outputs[i].input.publicKey, signature);
-            transferredSum += outputs[i].amount;
+            XPU.verifyEd25519(this.inputBytes, outAddress as [u8] + outScriptHash as [u8], output.input.publicKey, signature);
+            transferredSum += output.amount;
         }
     }
 

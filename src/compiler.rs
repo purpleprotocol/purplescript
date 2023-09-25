@@ -1,5 +1,9 @@
 use crate::lexer::{Keyword, Position, Symbol, Token, TokenKind};
 
+type IdentifierAndArg = (String, ValueType);
+type FuncIdx = usize; // 0 for main
+type Frame = (FuncIdx, Vec<IdentifierAndArg>);
+
 pub struct Compiler {
     /// Compiler state
     state: CompilerState,
@@ -7,8 +11,9 @@ pub struct Compiler {
     /// Buffer for the main function
     out_main: Vec<u8>,
 
-    /// Indexes of main args identifiers
-    main_args_identifiers_with_args: Vec<(String, ArgType)>,
+    /// Use a frame stack to keep track of definitions and to
+    /// translate them to frames.
+    frame_stack: Vec<Frame>,
 
     /// Buffer for other functions
     out_funcs: Vec<Vec<u8>>,
@@ -30,7 +35,7 @@ impl Compiler {
             out_main: vec![],
             out_funcs: vec![],
             out_bitmap: vec![],
-            main_args_identifiers_with_args: vec![],
+            frame_stack: vec![(0, vec![])],
             out_malleable_args_count: 0,
             found_main: false,
         }
@@ -119,8 +124,11 @@ impl Compiler {
                 &CompilerState::ExpectingMainFuncMalleableOrIdentifier,
                 TokenKind::Identifier(identifier),
             ) => {
-                self.main_args_identifiers_with_args
-                    .push((identifier, ArgType::Any));
+                self.frame_stack
+                    .last_mut()
+                    .unwrap()
+                    .1
+                    .push((identifier, ValueType::Any));
                 self.state = CompilerState::ExpectingMainFuncColonCommaOrRightParanthesis;
             }
 
@@ -182,120 +190,120 @@ impl Compiler {
             // Main func argument types
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::Address)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::Address;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::Address;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::Asset)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::Asset;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::Asset;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U8)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::U8;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::U8;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U16)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::U16;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::U16;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U32)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::U32;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::U32;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U64)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::U64;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::U64;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::U128)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::U128;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::U128;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::UBIG)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::UBIG;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::UBIG;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I8)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::I8;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::I8;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I16)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::I16;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::I16;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I32)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::I32;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::I32;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I64)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::I64;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::I64;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::I128)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::I128;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::I128;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::IBIG)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::IBIG;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::IBIG;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::F32)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::F32;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::F32;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::F64)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::F64;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::F64;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
             (&CompilerState::ExpectingMainFuncArgType, TokenKind::Keyword(Keyword::Decimal)) => {
                 let (_, ref mut arg_type) =
-                    self.main_args_identifiers_with_args.last_mut().unwrap();
-                *arg_type = ArgType::Decimal;
+                    self.frame_stack.last_mut().unwrap().1.last_mut().unwrap();
+                *arg_type = ValueType::Decimal;
                 self.state = CompilerState::ExpectingMainFuncCommaOrRightParanthesis;
             }
 
@@ -386,7 +394,7 @@ enum CompilerState {
     //
 }
 
-enum ArgType {
+enum ValueType {
     Any,
     U8,
     U16,
